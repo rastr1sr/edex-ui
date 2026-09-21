@@ -26,27 +26,26 @@
     "postbuild-linux": "rm -R prebuild-src",
     "postbuild-darwin": "rm -R prebuild-src",
     "postbuild-windows": "rmdir /S /Q prebuild-src",
-    "test": "rsync -a --info=progress2 src/ prebuild-src --exclude node_modules && node prebuild-minify.js && cd prebuild-src && npm install && snyk test && cd .. && rm -R prebuild-src",
     "init-file-icons": "git submodule update --init",
     "update-file-icons": "git submodule foreach git pull origin master && node file-icons-generator.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GitSquared/edex-ui.git"
+    "url": "git+https://github.com/rastr1sr/edex-ui.git"
   },
-  "author": "Gabriel 'Squared' SAILLARD <gabriel@saillard.dev> (https://gaby.dev)",
+  "author": "Rastrisr",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/GitSquared/edex-ui/issues"
+    "url": "https://github.com/rastr1sr/edex-ui/issues"
   },
-  "homepage": "https://github.com/GitSquared/edex-ui#readme",
+  "homepage": "https://github.com/rastr1sr/edex-ui#readme",
   "build": {
     "appId": "com.edex.ui",
     "productName": "eDEX-UI",
     "publish": "github",
     "asar": true,
     "compression": "normal",
-    "copyright": "Copyright © 2017-2021 Gabriel 'Squared' SAILLARD <gabriel@saillard.dev> (https://gaby.dev)",
+    "copyright": "Copyright © 2017-2021 Gabriel 'Squared' SAILLARD, © 2026 Rastrisr",
     "directories": {
       "output": "dist",
       "app": "prebuild-src"

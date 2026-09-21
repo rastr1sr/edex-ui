@@ -14,14 +14,14 @@
   "main": "_boot.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GitSquared/edex-ui.git"
+    "url": "git+https://github.com/rastr1sr/edex-ui.git"
   },
-  "author": "Gabriel 'Squared' SAILLARD <gabriel@saillard.dev> (https://gaby.dev)",
+  "author": "Rastrisr",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/GitSquared/edex-ui/issues"
+    "url": "https://github.com/rastr1sr/edex-ui/issues"
   },
-  "homepage": "https://github.com/GitSquared/edex-ui#readme",
+  "homepage": "https://github.com/rastr1sr/edex-ui#readme",
   "dependencies": {
     "@electron/remote": "^1.2.2",
     "augmented-ui": "^1.1.2",
