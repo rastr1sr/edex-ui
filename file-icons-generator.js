@@ -3,7 +3,6 @@
 // - src/assets/icons/file-icons.json: monolithic JSON files containing SVG data needed to draw all the icons.
 // - src/assets/misc/file-icons-match.js: script to match filenames to icons by using regex expressions.
 //
-// The generated files are pretty-printed. See prebuild-minify.js for automatic, on-CI minification of source files before bundling them in binary release assets.
 
 // BEFORE RUNNING THIS SCRIPT:
 // - npm run init-file-icons
