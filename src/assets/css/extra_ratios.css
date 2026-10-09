@@ -50,7 +50,7 @@
     }
 }
 
-@media (aspect-ratio: 64/27) { /* Commercial name of 64/27 ratio is 21:9 */
+@media (min-aspect-ratio: 21/9) { /* 21:9 and wider */
     div.keyboard_row#row_1 > div.keyboard_enter {
         height: 2.1vw;
         margin-top: 0.2vh;
