@@ -16,7 +16,10 @@ class Conninfo {
 
         this.current = document.querySelector("#mod_conninfo_innercontainer > h1 > i");
         this.total = document.querySelector("#mod_conninfo_innercontainer > h2 > i");
-        this._pb = require("pretty-bytes");
+        this._pb = bytes => {
+            let i = (bytes < 1000) ? 0 : Math.min(Math.floor(Math.log10(bytes) / 3), 8);
+            return Number((bytes / 1000 ** i).toPrecision(3)) + " " + ["B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"][i];
+        };
 
         // Init Smoothie
         let TimeSeries = require("smoothie").TimeSeries;

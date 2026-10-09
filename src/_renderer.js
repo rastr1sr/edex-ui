@@ -176,7 +176,7 @@ function waitForFonts() {
 
 // A proxy function used to add multithreading to systeminformation calls - see backend process manager @ _multithread.js
 function initSystemInformationProxy() {
-    const { nanoid } = require("nanoid/non-secure");
+    let lastId = 0;
 
     window.si = new Proxy({}, {
         apply: () => {throw new Error("Cannot use sysinfo proxy directly as a function")},
@@ -186,7 +186,7 @@ function initSystemInformationProxy() {
                 let callback = (typeof args[args.length - 1] === "function") ? true : false;
 
                 return new Promise((resolve, reject) => {
-                    let id = nanoid();
+                    let id = ++lastId;
                     ipc.once("systeminformation-reply-"+id, (e, res) => {
                         if (callback) {
                             args[args.length - 1](res);
@@ -334,7 +334,7 @@ async function getDisplayName() {
         return user;
 
     try {
-        user = await require("username")();
+        user = require("os").userInfo().username;
     } catch (e) {}
 
     return user;

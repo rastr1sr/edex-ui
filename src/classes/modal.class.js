@@ -5,10 +5,8 @@ class Modal {
         if (!options || !options.type) throw "Missing parameters";
 
         this.type = options.type;
-        this.id = require("nanoid").nanoid();
-        while (typeof window.modals[this.id] !== "undefined") {
-            this.id = require("nanoid")();
-        }
+        // String: compared against Object.keys(window.modals)
+        this.id = String(window.modalCount = (window.modalCount || 0) + 1);
         this.title = options.title || options.type || "Modal window";
         this.message = options.message || "Lorem ipsum dolor sit amet.";
         this.onclose = onclose;
