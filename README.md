@@ -16,16 +16,16 @@ Inspired by the [TRON Legacy movie effects](https://gmunk.com/TRON-Board-Room) a
 
 ## Running from source
 - clone the repository
-- `npm run install-linux` (macOS too, needs the Xcode command line tools) or `npm run install-windows` (from an **administrator** shell)
+- `npm install` (this also installs the app's own dependencies in `src/`)
 - `npm run start`
 
 #### Building
 Note: Due to native modules, you can only build targets for the host OS you are using.
 
-- `npm install` (NOT `install-linux` or `install-windows`)
+- `npm install`
 - `npm run build-linux` or `build-windows` or `build-darwin`
 
-The script will minify the source code, recompile native dependencies and create distributable assets in the `dist` folder.
+The script will create distributable assets in the `dist` folder. Windows builds target x64 and ARM64.
 
 ## Credits
 eDEX-UI's source code was primarily written by [Squared](https://github.com/GitSquared). It would never have existed without the work of [Seena](https://github.com/seenaburns) on DEX-UI.

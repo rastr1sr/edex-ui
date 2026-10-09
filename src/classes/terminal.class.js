@@ -3,11 +3,11 @@ class Terminal {
         if (opts.role === "client") {
             if (!opts.parentId) throw "Missing options";
 
-            this.xTerm = require("xterm").Terminal;
-            const {AttachAddon} = require("xterm-addon-attach");
-            const {FitAddon} = require("xterm-addon-fit");
-            const {LigaturesAddon} = require("xterm-addon-ligatures");
-            const {WebglAddon} = require("xterm-addon-webgl");
+            this.xTerm = require("@xterm/xterm").Terminal;
+            const {AttachAddon} = require("@xterm/addon-attach");
+            const {FitAddon} = require("@xterm/addon-fit");
+            const {LigaturesAddon} = require("@xterm/addon-ligatures/lib/addon-ligatures.mjs"); // package.json "main" points to a missing .js
+            const {WebglAddon} = require("@xterm/addon-webgl");
             this.Ipc = require("electron").ipcRenderer;
 
             this.port = opts.port || 3000;
@@ -66,7 +66,7 @@ class Terminal {
                 });
             }
 
-            let color = require("color");
+            let color = require("color").default;
             let colorify;
             if (doCustomFilter) {
                 colorify = (base, target) => {
@@ -104,13 +104,13 @@ class Terminal {
                 letterSpacing: window.theme.terminal.letterSpacing || 0,
                 lineHeight: window.theme.terminal.lineHeight || 1,
                 scrollback: 1500,
-                bellStyle: "none",
+                allowProposedApi: true,
                 theme: {
                     foreground: window.theme.terminal.foreground,
                     background: window.theme.terminal.background,
                     cursor: window.theme.terminal.cursor,
                     cursorAccent: window.theme.terminal.cursorAccent,
-                    selection: window.theme.terminal.selection,
+                    selectionBackground: window.theme.terminal.selection,
                     black: window.theme.colors.black || colorify("#2e3436", themeColor),
                     red: window.theme.colors.red || colorify("#cc0000", themeColor),
                     green: window.theme.colors.green || colorify("#4e9a06", themeColor),
@@ -311,7 +311,7 @@ class Terminal {
             this._disableCWDtracking = false;
             this._getTtyCWD = tty => {
                 return new Promise((resolve, reject) => {
-                    let pid = tty._pid;
+                    let pid = tty.pid;
                     switch(require("os").type()) {
                         case "Linux":
                             require("fs").readlink(`/proc/${pid}/cwd`, (e, cwd) => {
@@ -338,7 +338,7 @@ class Terminal {
             };
             this._getTtyProcess = tty => {
                 return new Promise((resolve, reject) => {
-                    let pid = tty._pid;
+                    let pid = tty.pid;
                     switch(require("os").type()) {
                         case "Linux":
                         case "Darwin":
@@ -408,21 +408,16 @@ class Terminal {
                 env: opts.env || process.env
             });
 
-            this.tty.onExit((code, signal) => {
+            this.tty.onExit(({exitCode: code, signal}) => {
                 this._closed = true;
                 this.onclosed(code, signal);
             });
 
             this.wss = new this.Websocket({
                 port: this.port,
+                host: "127.0.0.1",
                 clientTracking: true,
-                verifyClient: info => {
-                    if (this.wss.clients.length >= 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
+                verifyClient: () => this.wss.clients.size === 0
             });
             this.Ipc.on("terminal_channel-"+this.port, (e, ...args) => {
                 switch(args[0]) {
@@ -450,12 +445,12 @@ class Terminal {
                 }
             });
             this.wss.on("connection", ws => {
-                this.onopened(this.tty._pid);
+                this.onopened(this.tty.pid);
                 ws.on("close", (code, reason) => {
                     this.ondisconnected(code, reason);
                 });
                 ws.on("message", msg => {
-                    this.tty.write(msg);
+                    this.tty.write(msg.toString());
                 });
                 this.tty.onData(data => {
                     this._nextTickUpdateTtyCWD = true;

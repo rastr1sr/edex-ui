@@ -45,15 +45,12 @@ class Netstat {
         this.geoLookup = {
             get: () => null
         };
-        let geolite2 = require("geolite2-redist");
-        let maxmind = require("maxmind");
-        geolite2.downloadDbs(require("path").join(require("@electron/remote").app.getPath("userData"), "geoIPcache")).then(() => {
-           geolite2.open('GeoLite2-City', path => {
-                return maxmind.open(path);
-            }).catch(e => {throw e}).then(lookup => {
-                this.geoLookup = lookup;
-                this.lastconn.finished = true;
-            });
+        let cacheDir = require("path").join(require("@electron/remote").app.getPath("userData"), "geoIPcache");
+        require("geolite2-redist").open("GeoLite2-City", path => require("maxmind").open(path), cacheDir).then(lookup => {
+            this.geoLookup = lookup;
+            this.lastconn.finished = true;
+        }).catch(e => {
+            console.warn("GeoIP database unavailable:", e);
         });
     }
     updateInfo() {

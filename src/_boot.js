@@ -171,7 +171,6 @@ function createWindow(settings) {
         backgroundColor: '#000000',
         webPreferences: {
             devTools: true,
-	    enableRemoteModule: true,
             contextIsolation: false,
             backgroundThrottling: false,
             webSecurity: true,
@@ -182,12 +181,14 @@ function createWindow(settings) {
         }
     });
 
+    require("@electron/remote/main").enable(win.webContents);
     win.loadFile(path.join(__dirname, 'ui.html'));
 
     signale.complete("Frontend window created!");
     win.show();
     if (!settings.allowWindowed) {
-        win.setResizable(false);
+        // Grows a fullscreen window past the screen edges on Windows
+        if (!settings.forceFullscreen) win.setResizable(false);
     } else if (!require(lastWindowStateFile)["useFullscreen"]) {
         win.setFullScreen(false);
     }
@@ -206,7 +207,7 @@ app.on('ready', async () => {
     if (!require("fs").existsSync(settings.cwd)) throw new Error("Configured cwd path does not exist.");
 
     // See #366
-    let cleanEnv = await require("shell-env")(settings.shell).catch(e => { throw e; });
+    let cleanEnv = await require("shell-env").shellEnv(settings.shell).catch(e => { throw e; });
 
     Object.assign(cleanEnv, {
         TERM: "xterm-256color",
@@ -323,9 +324,9 @@ app.on('ready', async () => {
 
 app.on('web-contents-created', (e, contents) => {
     // Prevent creating more than one window
-    contents.on('new-window', (e, url) => {
-        e.preventDefault();
+    contents.setWindowOpenHandler(({url}) => {
         shell.openExternal(url);
+        return {action: "deny"};
     });
 
     // Prevent loading something else than the UI
