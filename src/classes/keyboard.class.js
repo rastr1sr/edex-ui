@@ -254,6 +254,8 @@ class Keyboard {
         this.container.addEventListener("touchend", dropKeyTouchHandler);
         this.container.addEventListener("touchcancel", dropKeyTouchHandler);
 
+        new ResizeObserver(() => this.alignEnter()).observe(this.container);
+
         // Bind actual keyboard actions to on-screen animations (for use without a touchscreen)
         let findKey = e => {
             // Fix incorrect querySelector error
@@ -555,6 +557,14 @@ class Keyboard {
             document.activeElement.dispatchEvent(new CustomEvent("input", {detail: ((isDelete)? "delete" : "insert") }));
             document.activeElement.focus();
         }
+    }
+    alignEnter() {
+        let [upper, lower] = this.container.querySelectorAll("div.keyboard_enter");
+        if (!upper || !lower) return;
+        lower.style.top = lower.style.right = "";
+        let u = upper.getBoundingClientRect(), l = lower.getBoundingClientRect(), style = getComputedStyle(lower);
+        lower.style.right = `${parseFloat(style.right) - (u.right - l.right)}px`;
+        lower.style.top = `${parseFloat(style.top) + u.bottom - parseFloat(getComputedStyle(upper).borderBottomWidth) - l.top}px`;
     }
     togglePasswordMode() {
         let d = this.container.dataset.passwordMode;

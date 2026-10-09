@@ -162,7 +162,9 @@ div.keyboard_row#row_1 > div.keyboard_enter {
 div.keyboard_row#row_2 > div.keyboard_enter {
     border: 0.19vh solid rgba(var(--color_r), var(--color_g), var(--color_b), 0.5);
     border-top-left-radius: 0vh;
-    border-top: 0.3vh solid var(--color_light_black);
+    border-top-right-radius: 0vh;
+    border-top: 0.19vh solid transparent;
+    overflow: visible;
     width: 7.78vh;
     min-width: 7.78vh;
     margin-top: 0vh;
@@ -171,8 +173,19 @@ div.keyboard_row#row_2 > div.keyboard_enter {
     right: -1vh;
 }
 
-div.keyboard_row#row_2 > div.keyboard_enter:active, div.keyboard_row#row_2 > div.keyboard_enter.active {
-    border-top: 0.3vh solid rgb(var(--color_r), var(--color_g), var(--color_b));
+/* Hides the upper half's bottom border inside the key */
+div.keyboard_row#row_2 > div.keyboard_enter::before {
+    content: "";
+    position: absolute;
+    top: -0.19vh;
+    left: 0;
+    right: 0;
+    height: 0.19vh;
+    background: var(--color_light_black);
+}
+
+div.keyboard_row#row_2 > div.keyboard_enter:active::before, div.keyboard_row#row_2 > div.keyboard_enter.active::before {
+    background: rgb(var(--color_r), var(--color_g), var(--color_b));
 }
 
 div.keyboard_key#keyboard_spacebar {
