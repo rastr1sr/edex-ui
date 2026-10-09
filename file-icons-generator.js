@@ -179,7 +179,7 @@ var fileIconsMatchScript = `/*
  * This is script-generated code, however, so it might disqualify
  * See file-icons-generator.js at root dir of git tree
 */
-function matchIcon(filename) {\n`;
+function matchIcon(filename, isDir) {\n`;
 
 // Parse the configuration file of file-icons/atom
 let atomConfig = CSON.parse(fs.readFileSync(path.join(__dirname, "file-icons", "atom", "config.cson"), {encoding: "utf8"}));
@@ -202,6 +202,7 @@ Object.keys(atomConfig.directoryIcons).forEach(key => {
         }
     }
 });
+fileIconsMatchScript += "    if (isDir) return;\n";
 Object.keys(atomConfig.fileIcons).forEach(key => {
     let config = atomConfig.fileIcons[key];
     if (config.icon.startsWith("_")) config.icon = config.icon.substr(1);

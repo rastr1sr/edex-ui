@@ -429,7 +429,7 @@ class FilesystemDisplay {
                         type = "eDEX-UI keyboards folder";
                         break;
                     default:
-                        let iconName = this.fileIconsMatcher(e.name);
+                        let iconName = this.fileIconsMatcher(e.name, e.category === "dir");
                         icon = this.icons[iconName];
                         if (typeof icon === "undefined") {
                             if (e.type === "file") icon = this.icons.file;

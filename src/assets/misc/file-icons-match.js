@@ -3,7 +3,7 @@
  * This is script-generated code, however, so it might disqualify
  * See file-icons-generator.js at root dir of git tree
 */
-function matchIcon(filename) {
+function matchIcon(filename, isDir) {
     if (/^APLSource$/.test(filename)) { return "acre"; }
     if (/^\.acre$/.test(filename)) { return "acre"; }
     if (/^\.agda$/i.test(filename)) { return "agda"; }
@@ -56,6 +56,7 @@ function matchIcon(filename) {
     if (/^\.vscode$/i.test(filename)) { return "vs"; }
     if (/^\.wine$/i.test(filename)) { return "wine"; }
     if (/^\.yarn$/i.test(filename)) { return "yarn"; }
+    if (isDir) return;
     if (/\.bsl$/i.test(filename)) { return "1c"; }
     if (/\.sdbl$/i.test(filename)) { return "1c"; }
     if (/\.os$/i.test(filename)) { return "1c"; }
