@@ -33,7 +33,6 @@ const electron = require("electron");
 require('@electron/remote/main').initialize()
 const ipc = electron.ipcMain;
 const path = require("path");
-const url = require("url");
 const fs = require("fs");
 const which = require("which");
 const Terminal = require("./classes/terminal.class.js").Terminal;
@@ -127,29 +126,9 @@ if(!fs.existsSync(lastWindowStateFile)) {
 
 // Copy default themes & keyboard layouts & fonts
 signale.pending("Mirroring internal assets...");
-try {
-    fs.mkdirSync(themesDir);
-} catch(e) {
-    // Folder already exists
-}
-fs.readdirSync(innerThemesDir).forEach(e => {
-    fs.writeFileSync(path.join(themesDir, e), fs.readFileSync(path.join(innerThemesDir, e), {encoding:"utf-8"}));
-});
-try {
-    fs.mkdirSync(kblayoutsDir);
-} catch(e) {
-    // Folder already exists
-}
-fs.readdirSync(innerKblayoutsDir).forEach(e => {
-    fs.writeFileSync(path.join(kblayoutsDir, e), fs.readFileSync(path.join(innerKblayoutsDir, e), {encoding:"utf-8"}));
-});
-try {
-    fs.mkdirSync(fontsDir);
-} catch(e) {
-    // Folder already exists
-}
-fs.readdirSync(innerFontsDir).forEach(e => {
-    fs.writeFileSync(path.join(fontsDir, e), fs.readFileSync(path.join(innerFontsDir, e)));
+[[innerThemesDir, themesDir], [innerKblayoutsDir, kblayoutsDir], [innerFontsDir, fontsDir]].forEach(([from, to]) => {
+    fs.mkdirSync(to, {recursive: true});
+    fs.readdirSync(from).forEach(e => fs.copyFileSync(path.join(from, e), path.join(to, e)));
 });
 
 // Version history logging
@@ -203,11 +182,7 @@ function createWindow(settings) {
         }
     });
 
-    win.loadURL(url.format({
-        pathname: path.join(__dirname, 'ui.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
+    win.loadFile(path.join(__dirname, 'ui.html'));
 
     signale.complete("Frontend window created!");
     win.show();

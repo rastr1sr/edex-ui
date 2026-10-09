@@ -11,8 +11,6 @@ class Clock {
             <h1 id="mod_clock_text"><span>?</span><span>?</span><span>:</span><span>?</span><span>?</span><span>:</span><span>?</span><span>?</span></h1>
         </div>`;
 
-        this.lastTime = new Date();
-
         this.updateClock();
         this.updater = setInterval(() => {
             this.updateClock();
@@ -29,23 +27,12 @@ class Clock {
             if (array[0] === 0) array[0] = 12;
         }
 
-        array.forEach((e, i) => {
-            if (e.toString().length !== 2) {
-                array[i] = "0"+e;
-            }
-        });
-        let clockString = `${array[0]}:${array[1]}:${array[2]}`;
-        array = clockString.match(/.{1}/g);
-        clockString = "";
-        array.forEach(e => {
-            if (e === ":") clockString += "<em>"+e+"</em>";
-            else clockString += "<span>"+e+"</span>";
-        });
-        
+        let clockString = array.map(e => String(e).padStart(2, "0")).join(":")
+            .split("").map(e => (e === ":") ? `<em>${e}</em>` : `<span>${e}</span>`).join("");
+
         if (this.twelveHours) clockString += `<span>${this.ampm}</span>`;
 
         document.getElementById("mod_clock_text").innerHTML = clockString;
-        this.lastTime = time;
     }
 }
 
