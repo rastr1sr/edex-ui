@@ -585,23 +585,24 @@ window.focusShellTab = number => {
 // Settings editor
 window.openSettings = async () => {
     if (document.getElementById("settingsEditor")) return;
+    let s = window.settings;
 
     // Build lists of available keyboards, themes, monitors
-    let keyboards, themes, monitors, ifaces;
+    let keyboards = "", themes = "", monitors = "", ifaces = "";
     fs.readdirSync(keyboardsDir).forEach(kb => {
         if (!kb.endsWith(".json")) return;
         kb = kb.replace(".json", "");
-        if (kb === window.settings.keyboard) return;
+        if (kb === s.keyboard) return;
         keyboards += `<option>${kb}</option>`;
     });
     fs.readdirSync(themesDir).forEach(th => {
         if (!th.endsWith(".json")) return;
         th = th.replace(".json", "");
-        if (th === window.settings.theme) return;
+        if (th === s.theme) return;
         themes += `<option>${th}</option>`;
     });
     for (let i = 0; i < electron.remote.screen.getAllDisplays().length; i++) {
-        if (i !== window.settings.monitor) monitors += `<option>${i}</option>`;
+        if (i !== s.monitor) monitors += `<option>${i}</option>`;
     }
     let nets = await window.si.networkInterfaces();
     nets.forEach(net => {
@@ -610,6 +611,41 @@ window.openSettings = async () => {
 
     // Unlink the tactile keyboard from the terminal emulator to allow filling in the settings fields
     window.keyboard.detach();
+
+    let override = flag => (flag) ? " (Currently overridden by CLI flag)" : "";
+    // [key, description, type, value or <option>s]
+    let rows = [
+        ["shell", "The program to run as a terminal emulator", "text"],
+        ["shellArgs", "Arguments to pass to the shell", "text", s.shellArgs || ""],
+        ["cwd", "Working Directory to start in", "text"],
+        ["env", "Custom shell environment override", "text"],
+        ["username", "Custom username to display at boot", "text"],
+        ["keyboard", "On-screen keyboard layout code", "select", `<option>${s.keyboard}</option>${keyboards}`],
+        ["theme", "Name of the theme to load", "select", `<option>${s.theme}</option>${themes}`],
+        ["termFontSize", "Size of the terminal text in pixels", "number"],
+        ["audio", "Activate audio sound effects", "bool"],
+        ["audioVolume", "Set default volume for sound effects (0.0 - 1.0)", "number", s.audioVolume || "1.0"],
+        ["disableFeedbackAudio", "Disable recurring feedback sound FX (input/output, mostly)", "bool"],
+        ["port", "Local port to use for UI-shell connection", "number"],
+        ["pingAddr", "IPv4 address to test Internet connectivity", "text", s.pingAddr || "1.1.1.1"],
+        ["clockHours", "Clock format (12/24 hours)", "numselect", (s.clockHours === 12) ? "<option>12</option><option>24</option>" : "<option>24</option><option>12</option>"],
+        ["monitor", "Which monitor to spawn the UI in (defaults to primary display)", "numselect", ((typeof s.monitor !== "undefined") ? `<option>${s.monitor}</option>` : "") + monitors],
+        ["nointro", "Skip the intro boot log and logo" + override(s.nointroOverride), "bool"],
+        ["nocursor", "Hide the mouse cursor" + override(s.nocursorOverride), "bool"],
+        ["iface", "Override the interface used for network monitoring", "select", `<option>${window.mods.netstat.iface}</option>${ifaces}`],
+        ["allowWindowed", "Allow using F11 key to set the UI in windowed mode", "bool"],
+        ["keepGeometry", "Try to keep a 16:9 aspect ratio in windowed mode", "bool", s.keepGeometry !== false],
+        ["excludeThreadsFromToplist", "Display threads in the top processes list", "bool"],
+        ["hideDotfiles", "Hide files and directories starting with a dot in file display", "bool"],
+        ["fsListView", "Show files in a more detailed list instead of an icon grid", "bool"],
+        ["experimentalGlobeFeatures", "Toggle experimental features for the network globe", "bool"],
+        ["experimentalFeatures", "Toggle Chrome's experimental web features (DANGEROUS)", "bool"]
+    ].map(([key, desc, type, value = s[key]]) => {
+        let field = (type === "text" || type === "number")
+            ? `<input type="${type}" id="settingsEditor-${key}" data-type="${type}" value="${value}">`
+            : `<select id="settingsEditor-${key}" data-type="${type}">${(type === "bool") ? `<option>${value}</option><option>${!value}</option>` : value}</select>`;
+        return `<tr><td>${key}</td><td>${desc}</td><td>${field}</td></tr>`;
+    }).join("");
 
     new Modal({
         type: "custom",
@@ -620,178 +656,7 @@ window.openSettings = async () => {
                         <th>Description</th>
                         <th>Value</th>
                     </tr>
-                    <tr>
-                        <td>shell</td>
-                        <td>The program to run as a terminal emulator</td>
-                        <td><input type="text" id="settingsEditor-shell" value="${window.settings.shell}"></td>
-                    </tr>
-                    <tr>
-                        <td>shellArgs</td>
-                        <td>Arguments to pass to the shell</td>
-                        <td><input type="text" id="settingsEditor-shellArgs" value="${window.settings.shellArgs || ''}"></td>
-                    </tr>
-                    <tr>
-                        <td>cwd</td>
-                        <td>Working Directory to start in</td>
-                        <td><input type="text" id="settingsEditor-cwd" value="${window.settings.cwd}"></td>
-                    </tr>
-                    <tr>
-                        <td>env</td>
-                        <td>Custom shell environment override</td>
-                        <td><input type="text" id="settingsEditor-env" value="${window.settings.env}"></td>
-                    </tr>
-                    <tr>
-                        <td>username</td>
-                        <td>Custom username to display at boot</td>
-                        <td><input type="text" id="settingsEditor-username" value="${window.settings.username}"></td>
-                    </tr>
-                    <tr>
-                        <td>keyboard</td>
-                        <td>On-screen keyboard layout code</td>
-                        <td><select id="settingsEditor-keyboard">
-                            <option>${window.settings.keyboard}</option>
-                            ${keyboards}
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>theme</td>
-                        <td>Name of the theme to load</td>
-                        <td><select id="settingsEditor-theme">
-                            <option>${window.settings.theme}</option>
-                            ${themes}
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>termFontSize</td>
-                        <td>Size of the terminal text in pixels</td>
-                        <td><input type="number" id="settingsEditor-termFontSize" value="${window.settings.termFontSize}"></td>
-                    </tr>
-                    <tr>
-                        <td>audio</td>
-                        <td>Activate audio sound effects</td>
-                        <td><select id="settingsEditor-audio">
-                            <option>${window.settings.audio}</option>
-                            <option>${!window.settings.audio}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>audioVolume</td>
-                        <td>Set default volume for sound effects (0.0 - 1.0)</td>
-                        <td><input type="number" id="settingsEditor-audioVolume" value="${window.settings.audioVolume || '1.0'}"></td>
-                    </tr>
-                    <tr>
-                        <td>disableFeedbackAudio</td>
-                        <td>Disable recurring feedback sound FX (input/output, mostly)</td>
-                        <td><select id="settingsEditor-disableFeedbackAudio">
-                            <option>${window.settings.disableFeedbackAudio}</option>
-                            <option>${!window.settings.disableFeedbackAudio}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>port</td>
-                        <td>Local port to use for UI-shell connection</td>
-                        <td><input type="number" id="settingsEditor-port" value="${window.settings.port}"></td>
-                    </tr>
-                    <tr>
-                        <td>pingAddr</td>
-                        <td>IPv4 address to test Internet connectivity</td>
-                        <td><input type="text" id="settingsEditor-pingAddr" value="${window.settings.pingAddr || "1.1.1.1"}"></td>
-                    </tr>
-                    <tr>
-                        <td>clockHours</td>
-                        <td>Clock format (12/24 hours)</td>
-                        <td><select id="settingsEditor-clockHours">
-                            <option>${(window.settings.clockHours === 12) ? "12" : "24"}</option>
-                            <option>${(window.settings.clockHours === 12) ? "24" : "12"}</option>
-                        </select></td>
-                    <tr>
-                        <td>monitor</td>
-                        <td>Which monitor to spawn the UI in (defaults to primary display)</td>
-                        <td><select id="settingsEditor-monitor">
-                            ${(typeof window.settings.monitor !== "undefined") ? "<option>"+window.settings.monitor+"</option>" : ""}
-                            ${monitors}
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>nointro</td>
-                        <td>Skip the intro boot log and logo${(window.settings.nointroOverride) ? " (Currently overridden by CLI flag)" : ""}</td>
-                        <td><select id="settingsEditor-nointro">
-                            <option>${window.settings.nointro}</option>
-                            <option>${!window.settings.nointro}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>nocursor</td>
-                        <td>Hide the mouse cursor${(window.settings.nocursorOverride) ? " (Currently overridden by CLI flag)" : ""}</td>
-                        <td><select id="settingsEditor-nocursor">
-                            <option>${window.settings.nocursor}</option>
-                            <option>${!window.settings.nocursor}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>iface</td>
-                        <td>Override the interface used for network monitoring</td>
-                        <td><select id="settingsEditor-iface">
-                            <option>${window.mods.netstat.iface}</option>
-                            ${ifaces}
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>allowWindowed</td>
-                        <td>Allow using F11 key to set the UI in windowed mode</td>
-                        <td><select id="settingsEditor-allowWindowed">
-                            <option>${window.settings.allowWindowed}</option>
-                            <option>${!window.settings.allowWindowed}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>keepGeometry</td>
-                        <td>Try to keep a 16:9 aspect ratio in windowed mode</td>
-                        <td><select id="settingsEditor-keepGeometry">
-                            <option>${(window.settings.keepGeometry === false) ? 'false' : 'true'}</option>
-                            <option>${(window.settings.keepGeometry === false) ? 'true' : 'false'}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>excludeThreadsFromToplist</td>
-                        <td>Display threads in the top processes list</td>
-                        <td><select id="settingsEditor-excludeThreadsFromToplist">
-                            <option>${window.settings.excludeThreadsFromToplist}</option>
-                            <option>${!window.settings.excludeThreadsFromToplist}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>hideDotfiles</td>
-                        <td>Hide files and directories starting with a dot in file display</td>
-                        <td><select id="settingsEditor-hideDotfiles">
-                            <option>${window.settings.hideDotfiles}</option>
-                            <option>${!window.settings.hideDotfiles}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>fsListView</td>
-                        <td>Show files in a more detailed list instead of an icon grid</td>
-                        <td><select id="settingsEditor-fsListView">
-                            <option>${window.settings.fsListView}</option>
-                            <option>${!window.settings.fsListView}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>experimentalGlobeFeatures</td>
-                        <td>Toggle experimental features for the network globe</td>
-                        <td><select id="settingsEditor-experimentalGlobeFeatures">
-                            <option>${window.settings.experimentalGlobeFeatures}</option>
-                            <option>${!window.settings.experimentalGlobeFeatures}</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>experimentalFeatures</td>
-                        <td>Toggle Chrome's experimental web features (DANGEROUS)</td>
-                        <td><select id="settingsEditor-experimentalFeatures">
-                            <option>${window.settings.experimentalFeatures}</option>
-                            <option>${!window.settings.experimentalFeatures}</option>
-                        </select></td>
-                    </tr>
+                    ${rows}
                 </table>
                 <h6 id="settingsEditorStatus">Loaded values from memory</h6>
                 <br>`,
@@ -817,39 +682,13 @@ window.writeFile = (path) => {
 };
 
 window.writeSettingsFile = () => {
-    window.settings = {
-        shell: document.getElementById("settingsEditor-shell").value,
-        shellArgs: document.getElementById("settingsEditor-shellArgs").value,
-        cwd: document.getElementById("settingsEditor-cwd").value,
-        env: document.getElementById("settingsEditor-env").value,
-        username: document.getElementById("settingsEditor-username").value,
-        keyboard: document.getElementById("settingsEditor-keyboard").value,
-        theme: document.getElementById("settingsEditor-theme").value,
-        termFontSize: Number(document.getElementById("settingsEditor-termFontSize").value),
-        audio: (document.getElementById("settingsEditor-audio").value === "true"),
-        audioVolume: Number(document.getElementById("settingsEditor-audioVolume").value),
-        disableFeedbackAudio: (document.getElementById("settingsEditor-disableFeedbackAudio").value === "true"),
-        pingAddr: document.getElementById("settingsEditor-pingAddr").value,
-        clockHours: Number(document.getElementById("settingsEditor-clockHours").value),
-        port: Number(document.getElementById("settingsEditor-port").value),
-        monitor: Number(document.getElementById("settingsEditor-monitor").value),
-        nointro: (document.getElementById("settingsEditor-nointro").value === "true"),
-        nocursor: (document.getElementById("settingsEditor-nocursor").value === "true"),
-        iface: document.getElementById("settingsEditor-iface").value,
-        allowWindowed: (document.getElementById("settingsEditor-allowWindowed").value === "true"),
-        forceFullscreen: window.settings.forceFullscreen,
-        keepGeometry: (document.getElementById("settingsEditor-keepGeometry").value === "true"),
-        excludeThreadsFromToplist: (document.getElementById("settingsEditor-excludeThreadsFromToplist").value === "true"),
-        hideDotfiles: (document.getElementById("settingsEditor-hideDotfiles").value === "true"),
-        fsListView: (document.getElementById("settingsEditor-fsListView").value === "true"),
-        experimentalGlobeFeatures: (document.getElementById("settingsEditor-experimentalGlobeFeatures").value === "true"),
-        experimentalFeatures: (document.getElementById("settingsEditor-experimentalFeatures").value === "true")
-    };
-
-    Object.keys(window.settings).forEach(key => {
-        if (window.settings[key] === "undefined") {
-            delete window.settings[key];
-        }
+    window.settings = {forceFullscreen: window.settings.forceFullscreen};
+    document.querySelectorAll("#settingsEditor [data-type]").forEach(field => {
+        let value = field.value;
+        if (value === "undefined") return;
+        if (field.dataset.type === "bool") value = (value === "true");
+        if (field.dataset.type === "number" || field.dataset.type === "numselect") value = Number(value);
+        window.settings[field.id.replace("settingsEditor-", "")] = value;
     });
 
     fs.writeFileSync(settingsFile, JSON.stringify(window.settings, "", 4));
