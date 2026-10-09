@@ -1,5 +1,5 @@
 /* Support for other screen ratios than 16:9 */
-@media (aspect-ratio: 16/10) {
+@media (min-aspect-ratio: 159/100) and (max-aspect-ratio: 161/100) {
     section#filesystem > h3.title {
         width: 43.5vw;
     }
@@ -69,10 +69,6 @@
         width: 94%;
     }
 
-    table#mod_toplist_table {
-        margin-top: -1vh;
-    }
-
     div#mod_netstat_inner {
         width: 100%;
     }
@@ -86,7 +82,7 @@
     }
 }
 
-@media (aspect-ratio: 5/4), (aspect-ratio: 4/3) {
+@media (min-aspect-ratio: 124/100) and (max-aspect-ratio: 135/100) {
     section#filesystem {
         display: none;
     }

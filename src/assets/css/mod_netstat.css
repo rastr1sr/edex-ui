@@ -51,8 +51,6 @@ div#mod_netstat_innercontainer {
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: 1fr;
     grid-gap: 0.46vh;
-    position: relative;
-    top: -1.5vh;
 }
 
 div#mod_netstat_innercontainer div {

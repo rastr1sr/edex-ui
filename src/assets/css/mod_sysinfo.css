@@ -46,3 +46,10 @@ div#mod_sysinfo h1 {
 div#mod_sysinfo h2 {
     margin: 0vh;
 }
+
+div#mod_sysinfo {
+    container-type: inline-size;
+}
+div#mod_sysinfo > div {
+    font-size: min(1.111vh, 3.6cqw);
+}

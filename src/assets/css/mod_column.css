@@ -58,3 +58,21 @@ section#mod_column_right {
 section#mod_column_right > h3.title {
     right: 0.555vh;
 }
+
+:is(div#mod_cpuinfo_innercontainer, div#mod_ramwatcher_inner, div#mod_toplist, div#mod_netstat_inner, div#mod_globe_innercontainer, div#mod_conninfo_innercontainer) > h1:first-child,
+:is(div#mod_globe_innercontainer, div#mod_conninfo_innercontainer) > h2 {
+    display: flex !important;
+    margin-bottom: 0 !important;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5em;
+    white-space: nowrap;
+
+    > i {
+        position: static !important;
+        width: auto !important;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}

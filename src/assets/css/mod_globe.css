@@ -63,18 +63,16 @@ div#mod_globe i.mod_globe_headerInfo {
     padding-top: .2vh;
 }
 
-div#mod_globe canvas {
+div#mod_globe canvas,
+div#mod_globe_canvas_placeholder {
     width: 109%;
+    max-width: 29.7vh; /* size at 16:9; stops the column outgrowing wide screens */
     margin: 0px;
     margin-top: -1.5vh;
 }
 
 div#mod_globe_canvas_placeholder {
-    width: 109%;
-    height: 0px;
-    padding-bottom: 100%;
-    margin: 0px;
-    margin-top: -1.5vh;
+    aspect-ratio: 1;
 }
 
 div#mod_globe h3 {
